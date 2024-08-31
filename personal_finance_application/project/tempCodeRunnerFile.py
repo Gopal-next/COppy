@@ -1,5 +1,5 @@
 import click
-@click
+
 @click.group()
 def cli():
     """Personal Finance Management Application"""
