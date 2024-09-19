@@ -1,8 +1,9 @@
 import sqlite3
 from datetime import datetime
 class Transaction:
-    def __init__(self,user_id,transaction_type,category,amount,date=None): #,description=""
+    def __init__(self,user_id,type,transaction_type,category,amount,date=None): #,description=""
         self.user_id =  user_id
+        self.type = type
         self.transaction_type = transaction_type
         self.category = category
         self.amount = amount
@@ -72,6 +73,23 @@ class Transaction:
         cursor.execute('''
                         SELECT * from transactions where user_id = ?''',(user_id,))
         transactions = cursor.fetchall()
+        # print(transactions)
         conn.close()
         for transaction in transactions:
             print(f"ID : {transaction[0]}, User ID : {transaction[1]} Type : {transaction[2]}, Category : {transaction[3]}, Amount : {transaction[4]}, Date : {transaction[5]} ")
+    
+
+    def fetch_by_category(user_id,type):
+        conn = sqlite3.connect('finance.db')
+        cursor = conn.cursor()
+
+        cursor.execute(''' SELECT category , SUM(amount) FROM transactions where user_id = ? and type = ? GROUP by category 
+                    ''', (user_id,type,))
+        
+        fetch = cursor.fetchall()
+        conn.close()
+        Total = 0
+        for category , total_amount in fetch:
+            print(f"Category : {category}, Total Amount : {total_amount}")
+            Total += total_amount
+        print("Overall amount ", Total)

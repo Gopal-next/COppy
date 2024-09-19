@@ -72,20 +72,54 @@ def delete(transaction_id):
 @click.option('--month', prompt = 'Month', help = 'Enter the month in YYYY-MM format')
 def month_report(month):
     ''' To view the monthly report'''
-    click.echo("Monthly report ")
+    click.echo("Monthly report \n")
     app.monthly_review(month)
     
 
 @click.command()
 @click.option('--year', prompt = 'Year', help = 'Enter the month in YYYY-MM format')
-def year_report(year):
+def YearlyReport(year):
     ''' To view the yearly report'''
     click.echo("Yearly report ")
-    app.monthly_review(year)
-    click.echo("Yearly report")
+    app.yearly_review(year)
+    # click.echo("Yearly report")
     
+@click.command()
+@click.option('--user_id',prompt = 'User ID', help= 'Type the user id from which you want')
+@click.option('--type',prompt = 'type',type = click.Choice(['income', 'expense']) ,help= 'Fetch by category')
+
+def fetch(user_id,type):
+    ''' View all records by category'''
+    click.echo("All records")
+    app.fetch_category(user_id,type)
+
+@click.command()
+@click.option('--user_id',prompt = 'User ID', help= 'Type the user id from which you want')
+@click.option('--month',prompt = 'Month (Type as YYYY-MM)', help= 'Type the month from which you want')
+@click.option('--category',prompt='Category', help='Type the category')
+@click.option('--monthly_budget',prompt = 'Monthly Budget', help= 'Enter the Monthly budget that you want to set')
+def setbudget(user_id, month, category, monthly_budget):
+    ''' Set Budegt '''
+    # click.echo("Budegt set for given month")
+    try:
+        app.budget_set(user_id, month, category, monthly_budget)
+        click.echo("Budegt set for given month")
+    except ValueError as e:
+        click.echo(e)
 
 
+@click.command()
+@click.option('--user_id',prompt = 'User ID', help= 'Type the user id from which you want')
+@click.option('--month',prompt = 'Month (Type as YYYY-MM)', help= 'Type the month from which you want')
+@click.option('--category',prompt='Category', help='Type the category')
+# @click.option('--monthly_budget',prompt = 'Monthly Budget', help= 'Enter the Monthly budget that you want to set')
+def seebudget(user_id, month, category, monthly_budget):
+    ''' Set Budegt '''
+    click.echo("Budegt for given month")
+    app.budget_check(user_id, month, category)
+
+
+# user_id, month, category,monthly_budget
 @click.group()
 def cli():
     """Personal Finance Management Application"""
@@ -98,7 +132,10 @@ cli.add_command(view)
 cli.add_command(update)
 cli.add_command(delete)
 cli.add_command(month_report)
-cli.add_command(year_report)
+cli.add_command(YearlyReport)
+cli.add_command(fetch)
+cli.add_command(setbudget)
+cli.add_command(seebudget)
 
 if __name__ == '__main__':
     cli()
