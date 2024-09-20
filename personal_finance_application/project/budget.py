@@ -99,7 +99,7 @@ class Budget:
             print(f"ID : {budget[0]}, User ID : {budget[1]} Type : {budget[2]}, Category : {budget[3]} , set_amount : {budget[4]}")
 
 
-
+    @staticmethod
     def check_budget(self):
         conn = sqlite3.connect('finance.db')
         cursor = conn.cursor()
@@ -109,9 +109,27 @@ class Budget:
                         (self.user_id, self.month, self.category,)
                         )
         budget = cursor.fetchone()[0]
-        
+        print(budget)
         if budget:
             print(f"Budget set for {self.category} for {self.month} is {self.monthly_budget[0]}")
         else:
             pass
+        conn.close()
+
+
+    def notify_users(self):
+        conn = sqlite3.connect('finance.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+                        SELECT t.user_id , b.monthly_budget, sum(t.amount) as total_expense,
+                        CASE 
+                        WHEN sum(t.amount) > b.monthly_budget THEN "Limit Amount Exceeded"
+                        ELSE "Within Budegt"
+                        END AS budget_status
+                        FROM Transactions as t join budget as b 
+                        on t.user_id = b.user_id
+                        WHERE t.category = 'expense' and substr(date ,1,7) = b.month
+                        GROUP BY t.user_id, b.monthly_budget
+                       ''')
+        budget = cursor.fetchall()
         conn.close()

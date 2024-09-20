@@ -20,11 +20,12 @@ class FinanceApp:
         user.register()
 
     def login_user(self, username, password):
-        user = User(username, password)
-        if user.login():
-            self.current_user = user
-            return True
-        return False
+        user = User.login(username)  # Get the user data from the database
+        if user and user['password'] == password:
+            return user['id']  # Return the user ID if login is successful
+        else:
+            raise ValueError("Invalid username or password")
+
 
     def is_logged_in(self):
         return self.current_user is not None
@@ -44,15 +45,15 @@ class FinanceApp:
         Transaction.delete_transaction(transaction_id)
 
 
-    # def all_transaction(self,user_id):
-    #     # all_records = Transaction
-    #     # all_records.view_all_transaction()
-    #     Transaction.view_all_transaction(user_id)
-
     def all_transaction(self,user_id):
         # all_records = Transaction
         # all_records.view_all_transaction()
-        Budget.view_all(user_id)
+        Transaction.view_all_transaction(user_id)
+
+    # def all_transaction(self,user_id):
+    #     # all_records = Transaction
+    #     # all_records.view_all_transaction()
+    #     Budget.view_all(user_id)
 
     # Report
     def monthly_review(self,month):
@@ -72,4 +73,8 @@ class FinanceApp:
 
     def budget_check(self,user_id , category, month):
         check = Budget(user_id, category, month)
-        check.check_budget()
+        check.check_budget(user_id, category, month)
+
+    def get_notify():
+        notify = Budget()
+        notify.notify_users()

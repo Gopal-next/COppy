@@ -1,9 +1,10 @@
 import sqlite3
 
 class Report:
-    def __init__(self,month=None, year=None):
+    def __init__(self,user_id,month=None,year=None):
         self.month = month
         self.year = year
+        self.user_id = user_id
 
     def monthly_report(self,month):
         conn = sqlite3.connect('finance.db')
@@ -26,10 +27,10 @@ class Report:
         print(f"Savings: {savings}")
 
     def yearly_report(self, year):
-        conn = sqlite3.connect('finance.db')
+        conn = sqlite3.connect('finance.db') #strftime('%Y', date)
         cursor = conn.cursor()
         cursor.execute('''
-                        SELECT type, SUM(amount) FROM transactions WHERE strftime('%Y', date) = ?
+                        SELECT type, SUM(amount) FROM transactions WHERE substr(date ,1,4) = ?  
                       GROUP BY type''', (year,))
         report = cursor.fetchall()
         conn.close()

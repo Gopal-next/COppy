@@ -11,7 +11,6 @@ class User:
         #     raise ValueError("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")
 
         self.username = username
-        # self.password = hashlib.sha256(password.encode()).hexdigest()
         self.password = password
 
 
@@ -45,23 +44,18 @@ class User:
         finally:
             conn.close()
         
-    def login(self):
+    def login(username):
         conn = sqlite3.connect('finance.db')
         cursor = conn.cursor()
 
-        cursor.execute('SELECT password FROM users WHERE username = ?', (self.username,))
-        stored_password = cursor.fetchone()
+        cursor.execute('SELECT id, username, password FROM users WHERE username = ?', (username,))
+        user = cursor.fetchone()  # Fetch the entire row
 
-        if stored_password is None:
+        if user is None:
             conn.close()
-            raise ValueError("Username does not exist")    
-        
-        
-        print(f"Stored password from database: {stored_password[0]}")
-
-        if self.password != stored_password[0]:
-            conn.close()
-            raise ValueError("Incorrect password")
+            raise ValueError("Username does not exist")
 
         conn.close()
-        # print("Login successful!")
+        return {'id': user[0], 'username': user[1], 'password': user[2]}  # Return user as a dictionary
+
+            # print("Login successful!")
