@@ -9,7 +9,7 @@ class FinanceApp:
         self.setup_database()
 
     def setup_database(self):
-        """Ensure that all necessary tables are created."""
+        """Ensure that all necessary tables must  created."""
         # print("Creating user table if it doesn't exist...")  
         User.create_user_table()
         Transaction.create_transactions_table()
