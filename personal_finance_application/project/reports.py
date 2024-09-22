@@ -11,8 +11,8 @@ class Report:
         cursor = conn.cursor()
         print(f"Fetching transactions for month: {month}")
         cursor.execute('''
-                        SELECT type , SUM(amount) FROM transactions WHERE strftime('%Y-%m', date) = ?
-                        GROUP BY type''', (month,))
+                        SELECT transaction_type , SUM(amount) FROM transactions WHERE strftime('%Y-%m', date) = ?
+                        GROUP BY transaction_type''', (month,))
         report = cursor.fetchall()
         conn.close()
         print(f"Fetched data: {report}")
@@ -30,8 +30,8 @@ class Report:
         conn = sqlite3.connect('finance.db') #strftime('%Y', date)
         cursor = conn.cursor()
         cursor.execute('''
-                        SELECT type, SUM(amount) FROM transactions WHERE substr(date ,1,4) = ?  
-                      GROUP BY type''', (year,))
+                        SELECT transaction_type, SUM(amount) FROM transactions WHERE  substr(date ,1,4) = ?  
+                      GROUP BY transaction_type''', (year,))
         report = cursor.fetchall()
         conn.close()
         print(f"Fetched data: {report}")

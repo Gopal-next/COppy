@@ -2,6 +2,9 @@ from project.user import User
 from project.transactions import Transaction
 from project.reports import Report
 from project.budget import Budget
+import sqlite3
+import datetime as datetime
+from project.data_persistence import DatabaseManager
 
 class FinanceApp:
     def __init__(self):
@@ -9,7 +12,7 @@ class FinanceApp:
         self.setup_database()
 
     def setup_database(self):
-        """Ensure that all necessary tables must  created."""
+        """Ensure that all necessary tables are created."""
         # print("Creating user table if it doesn't exist...")  
         User.create_user_table()
         Transaction.create_transactions_table()
@@ -19,6 +22,12 @@ class FinanceApp:
         user = User(username, password)
         user.register()
 
+    # def login_user(self, username, password):
+    #     user = User(username, password)
+    #     if user.login():
+    #         self.current_user = user
+    #         return True
+    #     return False
     def login_user(self, username, password):
         user = User.login(username)  # Get the user data from the database
         if user and user['password'] == password:
@@ -34,10 +43,62 @@ class FinanceApp:
         Transaction.fetch_by_category(user_id,type)
 
     
-    def add_records(self,user_id,transaction_type,category,amount,date=None): #,description=""
-        transaction = Transaction(user_id,transaction_type,category,amount)
-        transaction.add_transaction()
+    # def add_records(self,user_id,type,category,amount,date=None): #,description=""
+    #     if amount is None or amount <= 0:
+    #         raise ValueError("Amount must be a positive number.")
+    #     print(f"Received amount: {amount}") 
+    #     transaction = Transaction(user_id,type,category,amount,date)
+    #     transaction.add_transaction()
     
+    def add_records(self, user_id, type, category, amount, date=None):  # ,description=""
+        if amount is None or amount <= 0:
+            raise ValueError("Amount must be a positive number.")
+        
+        print(f"Received amount: {amount}")
+        
+        # Add the transaction first
+        transaction = Transaction(user_id, type, category, amount, date)
+        transaction.add_transaction()
+
+        # After adding the transaction, check if the user exceeded their budget
+        if type == 'expense':  # Only check budget for expenses
+            conn = sqlite3.connect('finance.db')
+            cursor = conn.cursor()
+
+            # Fetch the monthly budget for the given category and month
+            current_month = datetime.now().strftime('%Y-%m')  # Get current month
+            cursor.execute('''
+                SELECT monthly_budget 
+                FROM budget 
+                WHERE user_id = ? AND category = ? AND month = ?''', 
+                (user_id, category, current_month))
+            
+            budget = cursor.fetchone()
+            
+            if budget:
+                monthly_budget = budget[0]
+                # Fetch the total expenses for the month and category
+                cursor.execute('''
+                    SELECT SUM(amount) 
+                    FROM transactions 
+                    WHERE user_id = ? AND category = ? AND transaction_type = 'expense' AND substr(date, 1, 7) = ?''', 
+                    (user_id, category, current_month))
+                
+                total_expense = cursor.fetchone()[0]
+
+                # Compare total expense with budget
+                if total_expense > monthly_budget:
+                    print(f"Warning: You have exceeded your budget limit for {category} this month!")
+                    print(f"Total Expense: {total_expense}, Budget Limit: {monthly_budget}")
+                    # Optionally, prompt the user to update or delete the transaction
+                    user_input = input("Do you want to update or delete this transaction? (update/delete/none): ").lower()
+                    if user_input == "update":
+                        self.update_records(user_id, category, amount)  # Add your update function here
+                    elif user_input == "delete":
+                        self.delete_records(user_id)  # Add your delete function here
+
+        conn.close()
+
     def update_records(self,transaction_id,category, amount,date = None):
         Transaction.update_transaction(transaction_id,category, amount,date)
 
@@ -50,19 +111,19 @@ class FinanceApp:
         # all_records.view_all_transaction()
         Transaction.view_all_transaction(user_id)
 
-    # def all_transaction(self,user_id):
-    #     # all_records = Transaction
-    #     # all_records.view_all_transaction()
-    #     Budget.view_all(user_id)
+    def see_all_budegt(self,user_id):
+        # all_records = Transaction
+        # all_records.view_all_transaction()
+        Budget.view_budget(user_id)
 
     # Report
-    def monthly_review(self,month):
+    def monthly_review(self,user_id,month):
         year = month[:4]  
-        report= Report(month=month,year=year)
+        report= Report(user_id,month=month,year=year)
         report.monthly_report(month)
 
-    def yearly_review(self, year):
-        report = Report(year=year)
+    def yearly_review(self,user_id, year):
+        report = Report(user_id,year=year)
         report.yearly_report(year)
 
     # budget

@@ -81,7 +81,7 @@ class Budget:
     
     
     @staticmethod
-    def view_all(user_id):
+    def view_budget(user_id):
         conn = sqlite3.connect('finance.db')
         cursor = conn.cursor()
         cursor.execute('SELECT COUNT(*) FROM budget WHERE user_id = ?', (user_id,))

@@ -2,13 +2,13 @@ import sqlite3
 
 class User:
     def __init__(self, username, password,db_name='finance.db'):
-        # if not (5 <= len(password) <= 16):
-        #     raise ValueError("Password must be between 5 to 16 characters")
-        # if not any(char.islower() for char in password) or \
-        # not any(char.isupper() for char in password) or \
-        # not any(char.isdigit() for char in password) or \
-        # not any(char in '!@#$%^&*()' for char in password):
-        #     raise ValueError("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")
+        if not (5 <= len(password) <= 16):
+            raise ValueError("Password must be between 5 to 16 characters")
+        if not any(char.islower() for char in password) or \
+        not any(char.isupper() for char in password) or \
+        not any(char.isdigit() for char in password) or \
+        not any(char in '!@#$%^&*()' for char in password):
+            raise ValueError("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")
 
         self.username = username
         self.password = password
@@ -43,6 +43,8 @@ class User:
             raise ValueError("UserName Already exists")
         finally:
             conn.close()
+    
+    
         
     def login(username):
         conn = sqlite3.connect('finance.db')
@@ -58,4 +60,14 @@ class User:
         conn.close()
         return {'id': user[0], 'username': user[1], 'password': user[2]}  # Return user as a dictionary
 
-            # print("Login successful!")
+    #         # print("Login successful!")
+    # def login(self):
+    #     conn = sqlite3.connect('finance.db')
+    #     cursor = conn.cursor()
+    #     cursor.execute('SELECT password FROM users WHERE username=?', (self.username,))
+    #     result = cursor.fetchone()
+    #     conn.close()
+    #     if result and result[0] == self.password:
+    #         return True
+    #     else:
+    #         return False
